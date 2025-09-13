@@ -1,0 +1,20 @@
+.input-form {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.input-form input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+    
+ .input-form button {
+    padding: 8px 16px;
+    background-color: #add8e6;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}

@@ -1,0 +1,50 @@
+.task-list {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.task-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.task-content .completed {
+    text-decoration: line-through;
+    color: #888;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #ff6347;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.delete-all-container {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.delete-all-btn {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+}
