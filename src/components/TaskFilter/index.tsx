@@ -14,7 +14,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ currentFilter, onFilterChange }
   return (
     <div className="task-filter">
       {filterOptions.map((option) => (
-        <label key={option}>
+        <label key={option} className={option}>
           <input
             type="radio"
             name="filter"
@@ -22,7 +22,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ currentFilter, onFilterChange }
             checked={currentFilter === option}
             onChange={() => onFilterChange(option)}
           />
-          {option}
+          <span>{option}</span>
         </label>
       ))}
     </div>

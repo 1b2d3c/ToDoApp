@@ -12,6 +12,22 @@
     border-bottom: 1px solid #eee;
 }
 
+.task-item .category.work {
+    color: cornflowerblue;
+  }
+  
+  .task-item .category.personal {
+    color: mediumpurple;
+  }
+  
+  .task-item .category.shopping {
+    color: palevioletred;
+  }
+  
+  .task-item .category.other {
+    color: lightseagreen;
+  }
+
 .task-item:last-child {
     border-bottom: none;
 }

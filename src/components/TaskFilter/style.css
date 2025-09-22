@@ -4,3 +4,19 @@
     margin: 20px 0;
     justify-content: center;
 }
+
+.task-filter .work {
+    color: cornflowerblue;
+  }
+  
+  .task-filter .personal {
+    color: mediumpurple;
+  }
+  
+  .task-filter .shopping {
+    color: palevioletred;
+  }
+  
+  .task-filter .other {
+    color: lightseagreen;
+  }
