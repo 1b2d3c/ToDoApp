@@ -11,6 +11,8 @@ import {
   deleteDoc,
   doc,
   orderBy,
+  where,
+  getDocs,
 } from 'firebase/firestore';
 import { db } from './firebase'; // 作成したfirebase.tsからdbをインポート
 
@@ -25,7 +27,7 @@ const App: React.FC = () => {
   // Firestoreからタスクを取得（Read）
   useEffect(() => {
     // 'tasks'というコレクションへの参照を作成
-    const q = query(collection(db, 'tasks'));
+    const q = query(collection(db, 'tasks'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const tasksArray: Task[] = [];
       querySnapshot.forEach((doc) => {
@@ -52,6 +54,19 @@ const App: React.FC = () => {
 
   // 新しいタスクを追加（Create）
   const handleAddTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'completed'>) => {
+    // 1. 重複チェッククエリを作成
+    const q = query(collection(db, 'tasks'), where('text', '==', taskData.text));
+    
+    // 2. クエリを実行して重複をチェック
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // 3. 重複が見つかった場合
+      alert('同じ名前のタスクは既に追加されています。');
+      return;
+    }
+
+    // 4. 重複がなければ、タスクを追加
     await addDoc(collection(db, 'tasks'), {
       ...taskData,
       completed: false,
