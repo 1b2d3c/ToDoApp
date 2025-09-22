@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import type { Task } from './types/task';
-import type { FilterType } from './components/TaskFilter';
+import type { FilterType } from './types/task';
 import {
   collection,
   query,
@@ -10,6 +10,7 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  orderBy,
 } from 'firebase/firestore';
 import { db } from './firebase'; // 作成したfirebase.tsからdbをインポート
 
@@ -38,9 +39,13 @@ const App: React.FC = () => {
           createdAt: data.createdAt.toDate(),
         });
       });
+
+    // 'high', 'medium', 'low' の順序を手動で設定
+    const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
+      tasksArray.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+
       setTasks(tasksArray);
     });
-
     // クリーンアップ関数: コンポーネントがアンマウントされたときにリスナーを停止
     return () => unsubscribe();
   }, []); // 依存配列が空なので、コンポーネントのマウント時に一度だけ実行
@@ -80,13 +85,27 @@ const App: React.FC = () => {
     }
   };
 
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === 'ToDo') {
+      return !task.completed;
+    }
+    if (filter === 'Done') {
+      return task.completed;
+    }
+    // カテゴリーフィルターのロジックを追加
+    if (filter === 'work' || filter === 'personal' || filter === 'shopping' || filter === 'other') {
+      return task.category === filter;
+    }
+    return true;
+  });
+
   return (
     <div className="container">
       <h1>Todo App</h1>
       <InputForm onAddTask={handleAddTask} />
       <TaskFilter onFilterChange={setFilter} currentFilter={filter} />
       <TaskList
-        tasks={tasks}
+        tasks={filteredTasks}
         filter={filter}
         onToggleTask={handleToggleTask}
         onDeleteTask={handleDeleteTask}

@@ -1,5 +1,6 @@
 export type Priority = 'high' | 'medium' | 'low';
 export type Category = 'work' | 'personal' | 'shopping' | 'other';
+export type FilterType = 'All' | 'ToDo' | 'Done' | 'work' | 'personal' | 'shopping' | 'other';
 
 export interface Task {
     id: string;

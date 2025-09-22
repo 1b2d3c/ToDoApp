@@ -1,7 +1,7 @@
 import React from 'react';
 import './style.css';
 import type { Task } from '../../types/task';
-import type { FilterType } from '../TaskFilter';
+import type { FilterType } from '../../types/task';
 
 // TaskListコンポーネントのPropsの型定義
 interface TaskListProps {
@@ -49,8 +49,8 @@ const TaskList: React.FC<TaskListProps> = ({
 
                 {/* タスクの追加情報（優先度、カテゴリー、作成日） */}
                 <div className="task-meta">
-                  <span className={`priority ${task.priority}`}>{task.priority}</span>
-                  <span className="category">{task.category}</span>
+                  <span className={`priority ${task.priority}`}>{task.priority} </span>
+                  <span className="category">{task.category} </span>
                   <span className="created-at">
                     {task.createdAt.toLocaleDateString()}
                   </span>

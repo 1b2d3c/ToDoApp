@@ -1,19 +1,19 @@
 import React from 'react';
 import './style.css';
+import type { FilterType } from '../../types/task';
 
-// フィルターオプションの型定義
-export type FilterType = 'All' | 'ToDo' | 'Done';
-
-// TaskFilterコンポーネントのPropsの型定義
 interface TaskFilterProps {
   onFilterChange: (filter: FilterType) => void;
   currentFilter: FilterType;
 }
 
 const TaskFilter: React.FC<TaskFilterProps> = ({ currentFilter, onFilterChange }) => {
+  // フィルターオプションにカテゴリーを追加
+  const filterOptions: FilterType[] = ['All', 'ToDo', 'Done', 'work', 'personal', 'shopping', 'other'];
+
   return (
     <div className="task-filter">
-      {(['All', 'ToDo', 'Done'] as FilterType[]).map((option) => (
+      {filterOptions.map((option) => (
         <label key={option}>
           <input
             type="radio"
