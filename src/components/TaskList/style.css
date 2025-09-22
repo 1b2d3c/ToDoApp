@@ -1,3 +1,6 @@
+.task-list-container {
+    text-align: left;
+}
 .task-list {
     list-style: none;
     padding: 0;
