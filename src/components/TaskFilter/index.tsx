@@ -6,11 +6,11 @@ export type FilterType = 'All' | 'ToDo' | 'Done';
 
 // TaskFilterコンポーネントのPropsの型定義
 interface TaskFilterProps {
-  filter: FilterType;
   onFilterChange: (filter: FilterType) => void;
+  currentFilter: FilterType;
 }
 
-const TaskFilter: React.FC<TaskFilterProps> = ({ filter, onFilterChange }) => {
+const TaskFilter: React.FC<TaskFilterProps> = ({ currentFilter, onFilterChange }) => {
   return (
     <div className="task-filter">
       {(['All', 'ToDo', 'Done'] as FilterType[]).map((option) => (
@@ -19,7 +19,7 @@ const TaskFilter: React.FC<TaskFilterProps> = ({ filter, onFilterChange }) => {
             type="radio"
             name="filter"
             value={option}
-            checked={filter === option}
+            checked={currentFilter === option}
             onChange={() => onFilterChange(option)}
           />
           {option}

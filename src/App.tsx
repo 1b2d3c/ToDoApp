@@ -1,70 +1,90 @@
-import React, { useReducer } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import type { Task } from './types/task';
+import type { FilterType } from './components/TaskFilter';
+import {
+  collection,
+  query,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
+import { db } from './firebase'; // 作成したfirebase.tsからdbをインポート
+
+import TaskList from './components/TaskList';
 import InputForm from './components/InputForm';
 import TaskFilter from './components/TaskFilter';
-import type { FilterType } from './components/TaskFilter';
-import TaskList from './components/TaskList';
-import type { Task } from './types/task';
-
-// タスクの型定義
-// src/types/task.ts に配置を想定
-// interface Task {
-//   id: number;
-//   text: string;
-//   completed: boolean;
-// }
-
-// アクションの型定義
-type Action =
-  | { type: 'ADD_TASK'; payload: Task }
-  | { type: 'TOGGLE_TASK'; payload: number }
-  | { type: 'DELETE_TASK'; payload: number }
-  | { type: 'DELETE_ALL_TASKS' };
-
-// Reducer関数
-const taskReducer = (state: Task[], action: Action): Task[] => {
-  switch (action.type) {
-    case 'ADD_TASK':
-      return [...state, action.payload];
-    case 'TOGGLE_TASK':
-      return state.map((task) =>
-        task.id === action.payload ? { ...task, completed: !task.completed } : task
-      );
-    case 'DELETE_TASK':
-      return state.filter((task) => task.id !== action.payload);
-    case 'DELETE_ALL_TASKS':
-      return [];
-    default:
-      return state;
-  }
-};
 
 const App: React.FC = () => {
-  const [tasks, dispatch] = useReducer(taskReducer, []);
-  const [filter, setFilter] = React.useState<FilterType>('All');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [filter, setFilter] = useState<FilterType>('All');
 
-  const handleAddTask = (task: Task) => {
-    dispatch({ type: 'ADD_TASK', payload: task });
+  // Firestoreからタスクを取得（Read）
+  useEffect(() => {
+    // 'tasks'というコレクションへの参照を作成
+    const q = query(collection(db, 'tasks'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const tasksArray: Task[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        tasksArray.push({
+          id: doc.id, // FirestoreのドキュメントIDをタスクIDとして使用
+          text: data.text,
+          completed: data.completed,
+          priority: data.priority,
+          category: data.category,
+          createdAt: data.createdAt.toDate(),
+        });
+      });
+      setTasks(tasksArray);
+    });
+
+    // クリーンアップ関数: コンポーネントがアンマウントされたときにリスナーを停止
+    return () => unsubscribe();
+  }, []); // 依存配列が空なので、コンポーネントのマウント時に一度だけ実行
+
+  // 新しいタスクを追加（Create）
+  const handleAddTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'completed'>) => {
+    await addDoc(collection(db, 'tasks'), {
+      ...taskData,
+      completed: false,
+      createdAt: new Date(),
+    });
   };
 
-  const handleToggleTask = (id: number) => {
-    dispatch({ type: 'TOGGLE_TASK', payload: id });
+  // タスクの完了状態を切り替え（Update）
+  const handleToggleTask = async (id: string) => {
+    const taskDocRef = doc(db, 'tasks', id);
+    const taskToToggle = tasks.find((task) => task.id === id);
+    if (taskToToggle) {
+      await updateDoc(taskDocRef, {
+        completed: !taskToToggle.completed,
+      });
+    }
   };
 
-  const handleDeleteTask = (id: number) => {
-    dispatch({ type: 'DELETE_TASK', payload: id });
+  // タスクを削除（Delete）
+  const handleDeleteTask = async (id: string) => {
+    const taskDocRef = doc(db, 'tasks', id);
+    await deleteDoc(taskDocRef);
   };
 
-  const handleDeleteAll = () => {
-    dispatch({ type: 'DELETE_ALL_TASKS' });
+  // すべてのタスクを削除（Delete All）
+  const handleDeleteAll = async () => {
+    const taskDocs = tasks.map((task) => doc(db, 'tasks', task.id));
+    // 複数のドキュメントをまとめて削除する処理
+    for (const taskDoc of taskDocs) {
+      await deleteDoc(taskDoc);
+    }
   };
 
   return (
     <div className="container">
-      <h1 className="title">ToDo App</h1>
+      <h1>Todo App</h1>
       <InputForm onAddTask={handleAddTask} />
-      <hr />
-      <TaskFilter filter={filter} onFilterChange={setFilter} />
+      <TaskFilter onFilterChange={setFilter} currentFilter={filter} />
       <TaskList
         tasks={tasks}
         filter={filter}

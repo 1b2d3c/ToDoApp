@@ -7,8 +7,8 @@ import type { FilterType } from '../TaskFilter';
 interface TaskListProps {
   tasks: Task[];
   filter: FilterType;
-  onToggleTask: (id: number) => void;
-  onDeleteTask: (id: number) => void;
+  onToggleTask: (id: string) => void;
+  onDeleteTask: (id: string) => void;
   onDeleteAll: () => void;
 }
 
@@ -41,10 +41,23 @@ const TaskList: React.FC<TaskListProps> = ({
                 checked={task.completed}
                 onChange={() => onToggleTask(task.id)}
               />
-              <span className={task.completed ? 'completed' : ''}>
-                {task.text}
-              </span>
+              <div className="task-details">
+                {/* タスクのテキスト */}
+                <span className={`task-text ${task.completed ? 'completed' : ''}`}>
+                  {task.text}
+                </span>
+
+                {/* タスクの追加情報（優先度、カテゴリー、作成日） */}
+                <div className="task-meta">
+                  <span className={`priority ${task.priority}`}>{task.priority}</span>
+                  <span className="category">{task.category}</span>
+                  <span className="created-at">
+                    {task.createdAt.toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
             </div>
+            
             <button className="delete-btn" onClick={() => onDeleteTask(task.id)}>
               ×
             </button>
