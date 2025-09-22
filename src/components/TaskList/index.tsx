@@ -1,12 +1,12 @@
 import React from 'react';
 import './style.css';
 import type { Task } from '../../types/task';
-import type { FilterType } from '../../types/task';
+import type { StatusFilter } from '../../types/task';
 
 // TaskListコンポーネントのPropsの型定義
 interface TaskListProps {
   tasks: Task[];
-  filter: FilterType;
+  filter: StatusFilter;
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onDeleteAll: () => void;
