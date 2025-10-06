@@ -4,14 +4,15 @@ import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// import.meta.env を使用して環境変数を読み込む
 const firebaseConfig = {
-  apiKey: "AIzaSyAom-TCsvFl3icx_gfpXqW51dRP8-P2Bsc",
-  authDomain: "todoapp-be697.firebaseapp.com",
-  projectId: "todoapp-be697",
-  storageBucket: "todoapp-be697.firebasestorage.app",
-  messagingSenderId: "902361774681",
-  appId: "1:902361774681:web:cbfc909c874cb2992acf48"
+  // Viteの自動読み込み機能により、VITE_プレフィックスの環境変数が利用可能
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
