@@ -19,18 +19,20 @@ import { db } from './firebase';
 
 import TaskList from './components/TaskList';
 import InputForm from './components/InputForm';
-import TaskFilter from './components/TaskFilter'; // TaskFilterは2つの選択欄を持つように変更します
+import TaskFilter from './components/TaskFilter';
+
+import { PRIORITY_ORDER } from './constants';
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  // フィルターのステートを2つに分割
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('All');
 
   // Firestoreからタスクを取得（Read）
   useEffect(() => {
-    // クエリは一旦シンプルに
     const q = query(collection(db, 'tasks'), orderBy('createdAt', 'desc'));
+
+    // Firestore側がエラーを出す可能性は低いが、必要に応じて外側で処理。
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const tasksArray: Task[] = [];
       querySnapshot.forEach((doc) => {
@@ -41,57 +43,86 @@ const App: React.FC = () => {
           completed: data.completed,
           priority: data.priority,
           category: data.category,
-          createdAt: data.createdAt.toDate(),
+          // FirestoreのTimestamp型をDate型に変換
+          createdAt: data.createdAt ? data.createdAt.toDate() : new Date(), 
         });
       });
 
-
-    const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
-      tasksArray.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+      tasksArray.sort((a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
       setTasks(tasksArray);
+    }, (error) => {
+      // リアルタイムリスナーのエラーハンドリング
+      console.error('Firestoreリスナーエラー:', error);
+      alert('タスクデータの取得中にエラーが発生しました。');
     });
+
     return () => unsubscribe();
   }, []);
 
   // 新しいタスクを追加（Create）
   const handleAddTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'completed'>) => {
-    const q = query(collection(db, 'tasks'), where('text', '==', taskData.text));
-    const querySnapshot = await getDocs(q);
+    try {
+      const q = query(collection(db, 'tasks'), where('text', '==', taskData.text));
+      const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-      alert('同じ名前のタスクは既に追加されています。');
-      return;
+      if (!querySnapshot.empty) {
+        alert('同じ名前のタスクは既に追加されています。');
+        return;
+      }
+
+      await addDoc(collection(db, 'tasks'), {
+        ...taskData,
+        completed: false,
+        createdAt: new Date(),
+      });
+    } catch (error) {
+      console.error('タスクの追加に失敗しました：', error);
+      alert('タスクの追加に失敗しました。もう一度お試しください。');
     }
-
-    await addDoc(collection(db, 'tasks'), {
-      ...taskData,
-      completed: false,
-      createdAt: new Date(),
-    });
   };
 
   // タスクの完了状態を切り替え（Update）
   const handleToggleTask = async (id: string) => {
-    const taskDocRef = doc(db, 'tasks', id);
-    const taskToToggle = tasks.find((task) => task.id === id);
-    if (taskToToggle) {
-      await updateDoc(taskDocRef, {
-        completed: !taskToToggle.completed,
-      });
+    try { 
+      const taskDocRef = doc(db, 'tasks', id);
+      const taskToToggle = tasks.find((task) => task.id === id);
+      if (taskToToggle) {
+        await updateDoc(taskDocRef, {
+          completed: !taskToToggle.completed,
+        });
+      }
+    } catch (error) {
+      console.error('タスクの更新に失敗しました：', error);
+      alert('タスクの更新に失敗しました。もう一度お試しください。');
     }
   };
 
   // タスクを削除（Delete）
   const handleDeleteTask = async (id: string) => {
-    const taskDocRef = doc(db, 'tasks', id);
-    await deleteDoc(taskDocRef);
+    try { 
+      const taskDocRef = doc(db, 'tasks', id);
+      await deleteDoc(taskDocRef);
+    } catch (error) {
+      console.error('タスクの削除に失敗しました：', error);
+      alert('タスクの削除に失敗しました。もう一度お試しください。');
+    }
   };
 
   // すべてのタスクを削除（Delete All）
   const handleDeleteAll = async () => {
-    const taskDocs = tasks.map((task) => doc(db, 'tasks', task.id));
-    for (const taskDoc of taskDocs) {
-      await deleteDoc(taskDoc);
+    if (!window.confirm('本当に全てのタスクを削除しますか？')) {
+      return;
+    }
+
+    try {
+      const taskDocs = tasks.map((task) => doc(db, 'tasks', task.id));
+      
+      await Promise.all(taskDocs.map(taskDoc => deleteDoc(taskDoc)));
+      
+      alert('全てのタスクを削除しました。');
+    } catch (error) {
+      console.error('一括削除に失敗しました：', error);
+      alert('一括削除に失敗しました。もう一度お試しください。');
     }
   };
 
@@ -121,7 +152,6 @@ const App: React.FC = () => {
       />
       <TaskList
         tasks={filteredTasks}
-        filter={statusFilter} // TaskListに渡すfilterをstatusFilterに変更
         onToggleTask={handleToggleTask}
         onDeleteTask={handleDeleteTask}
         onDeleteAll={handleDeleteAll}
