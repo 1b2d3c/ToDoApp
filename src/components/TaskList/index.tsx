@@ -1,39 +1,31 @@
+// src/components/TaskList/index.tsx
+
 import React from 'react';
 import './style.css';
 import type { Task } from '../../types/task';
-import type { StatusFilter } from '../../types/task';
 
 // TaskListコンポーネントのPropsの型定義
 interface TaskListProps {
-  tasks: Task[];
-  filter: StatusFilter;
+  // App.tsxでフィルタリング済みのタスクを受け取る
+  tasks: Task[]; 
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onDeleteAll: () => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
-  tasks,
-  filter,
+  tasks, // フィルタリング済みのリストを期待
   onToggleTask,
   onDeleteTask,
   onDeleteAll,
 }) => {
-  // フィルターされたタスクを取得
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === 'ToDo') {
-      return !task.completed;
-    }
-    if (filter === 'Done') {
-      return task.completed;
-    }
-    return true; // 'All'の場合
-  });
+  // tasks をそのまま使用します
 
   return (
     <div className="task-list-container">
       <ul className="task-list">
-        {filteredTasks.map((task) => (
+        {/* 受け取った tasks をそのままマップして表示 */}
+        {tasks.map((task) => ( 
           <li key={task.id} className="task-item">
             <div className="task-content">
               <input
@@ -51,8 +43,9 @@ const TaskList: React.FC<TaskListProps> = ({
                 <div className="task-meta">
                   <span className={`priority ${task.priority}`}>{task.priority} </span>
                   <span className={`category ${task.category}`}>{task.category} </span>
+                  {/* Dateオブジェクトが渡されることを前提 */}
                   <span className="created-at">
-                    {task.createdAt.toLocaleDateString()}
+                    {task.createdAt instanceof Date ? task.createdAt.toLocaleDateString() : 'Invalid Date'}
                   </span>
                 </div>
               </div>
